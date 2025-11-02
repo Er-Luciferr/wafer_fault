@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Lint code
         run: echo "Linting repository"
@@ -29,13 +29,12 @@ jobs:
     name: Continuous Delivery
     needs: integration
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -43,26 +42,17 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Validate ECR repository name
-        env:
-          IMAGE_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}
-        run: |
-          if [ -z "$IMAGE_REPO_NAME" ]; then
-            echo "❌ ERROR: ECR repository name is missing."
-            echo "➡️ Please set 'AWS_ECR_REPO_NAME' in GitHub → Settings → Secrets → Actions."
-            exit 1
-          else
-            echo "✅ Repository name detected: $IMAGE_REPO_NAME"
-          fi
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
 
       - name: Build, tag, and push docker image to Amazon ECR
+        id: build-image
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}
           IMAGE_TAG: latest
         run: |
-          echo "🚀 Building and pushing image to: $ECR_REGISTRY/$IMAGE_REPO_NAME:$IMAGE_TAG"
-          docker build -t $ECR_REGISTRY/$IMAGE_REPO_NAME:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$IMAGE_REPO_NAME:$IMAGE_TAG
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker build -t ${{ secrets.AWS_ECR_REPO_URI }}:$IMAGE_TAG .
+          docker push ${{ secrets.AWS_ECR_REPO_URI }}:$IMAGE_TAG
