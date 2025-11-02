@@ -29,21 +29,33 @@ jobs:
     name: Continuous Delivery
     needs: integration
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Validate ECR repository name
+        env:
+          IMAGE_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}
+        run: |
+          if [ -z "$IMAGE_REPO_NAME" ]; then
+            echo "❌ ERROR: ECR repository name is missing."
+            echo "➡️ Please set 'AWS_ECR_REPO_NAME' in GitHub → Settings → Secrets → Actions."
+            exit 1
+          else
+            echo "✅ Repository name detected: $IMAGE_REPO_NAME"
+          fi
 
       - name: Build, tag, and push docker image to Amazon ECR
         env:
@@ -51,5 +63,6 @@ jobs:
           IMAGE_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}
           IMAGE_TAG: latest
         run: |
+          echo "🚀 Building and pushing image to: $ECR_REGISTRY/$IMAGE_REPO_NAME:$IMAGE_TAG"
           docker build -t $ECR_REGISTRY/$IMAGE_REPO_NAME:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$IMAGE_REPO_NAME:$IMAGE_TAG
