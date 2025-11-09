@@ -1,7 +1,16 @@
+import warnings
+import sys
+import os
+
+# Suppress pkg_resources deprecation warning from xgboost
+# This warning appears when xgboost imports pkg_resources (deprecated in setuptools)
+# The warning is harmless but annoying, so we filter it out
+warnings.filterwarnings('ignore', message='.*pkg_resources is deprecated.*', category=UserWarning)
+warnings.filterwarnings('ignore', message='.*pkg_resources.*', category=UserWarning, module='xgboost.*')
+
 from flask import Flask , render_template,jsonify,request,send_file
 from src.exception import CustomException
 from src.logger import logging as lg 
-import sys,os 
 
 from src.pipeline.train_pipeline import TrainingPipeline
 from src.pipeline.predict_pipeline import PredictionPipeline

@@ -1,7 +1,11 @@
 import sys, os
+import warnings
 from typing import List,Generator,Tuple
 import pandas as pd
 import numpy as np
+
+# Suppress pkg_resources deprecation warning from xgboost
+warnings.filterwarnings('ignore', message='.*pkg_resources is deprecated.*', category=UserWarning)
 
 from xgboost import XGBClassifier
 
@@ -19,10 +23,10 @@ from dataclasses import dataclass
 
 @dataclass
 class ModelTrainerConfig:
-    artifact_folder= os.path.join(artifact_folder)
-    trained_model_path= os.path.join(artifact_folder,'model.pkl')
+    artifact_folder: str = artifact_folder
+    trained_model_path: str = os.path.join(artifact_folder, 'model.pkl')
     expected_accuracy = 0.45
-    model_config_file_path = os.path.join('config' , 'model.yaml')
+    model_config_file_path: str = os.path.join('config', 'model.yaml')
 
 class ModelTrainer:
     def __init__(self):
@@ -128,13 +132,6 @@ class ModelTrainer:
 
             logging.info(f"Extracting model config file path")
 
-
-            
-
-
-
-            logging.info(f"Extracting model config file path")
-
             model_report: dict = self.evaluate_models(X=X_train, y=y_train, models=self.models)
 
             ## To get best model score from dict
@@ -165,7 +162,7 @@ class ModelTrainer:
 
 
             if best_model_score < 0.5:
-                raise Exception("No best model found with an accuracy greater than the threshold 0.6")
+                raise Exception("No best model found with an accuracy greater than the threshold 0.5")
             
             logging.info(f"Best found model on both training and testing dataset")
 
@@ -183,7 +180,7 @@ class ModelTrainer:
                 obj=best_model
             )
             
-            return self.model_trainer_config.trained_model_path
+            return best_model_score
 
             
 

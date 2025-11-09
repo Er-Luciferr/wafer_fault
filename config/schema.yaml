@@ -1,0 +1,6 @@
+columns:
+  - Wafer
+  - Good/Bad
+
+target_column: Good/Bad
+

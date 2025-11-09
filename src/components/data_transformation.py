@@ -14,10 +14,10 @@ from dataclasses import dataclass
 
 @dataclass
 class DataTransformationConfig:
-    artifact_dir=os.path.join(artifact_folder)
-    transformed_test_file_path=os.path.join(artifact_dir , 'test.nyp')
-    transformed_train_file_path=os.path.join(artifact_dir, 'train.npy')
-    transformed_object_file_path=os.path.join(artifact_dir,'preprocessor.pkl')
+    artifact_dir: str = artifact_folder
+    transformed_test_file_path: str = os.path.join(artifact_folder, 'test.npy')
+    transformed_train_file_path: str = os.path.join(artifact_folder, 'train.npy')
+    transformed_object_file_path: str = os.path.join(artifact_folder, 'preprocessor.pkl')
 
 
 class DataTransformation:
@@ -42,7 +42,9 @@ class DataTransformation:
         """
         try:
             data = pd.read_csv(feature_store_file_path)
-            data.rename(columns={'Good/Bad': TARGET_COLUMN}, inplace=True)
+            # Rename column if it exists and is different from TARGET_COLUMN
+            if 'Good/Bad' in data.columns and TARGET_COLUMN != 'Good/Bad':
+                data.rename(columns={'Good/Bad': TARGET_COLUMN}, inplace=True)
             return data
 
         except Exception as e:

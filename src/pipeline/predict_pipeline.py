@@ -1,5 +1,11 @@
 import shutil
 import os,sys 
+
+# Add project root to Python path to allow running this file directly
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import pandas as pd 
 import pickle 
 from flask import request
@@ -63,7 +69,7 @@ class PredictionPipeline:
         except Exception as e:
             raise CustomException(e,sys )
 
-    def get_predicted_dataframe(self , input_dataframe_path:pd.DataFrame):
+    def get_predicted_dataframe(self , input_dataframe_path: str):
         """
             Method Name :   get_predicted_dataframe
             Description :   this method returns the dataframw with a new column containing predictions
@@ -104,3 +110,7 @@ class PredictionPipeline:
 
         except Exception as e:
             raise CustomException(e,sys)
+
+# Note: This module is designed to work with Flask's request object
+# To use predictions, run the Flask app (app.py) and use the /predict endpoint
+# This file should not be run directly as a standalone script

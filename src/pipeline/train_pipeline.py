@@ -1,4 +1,13 @@
 import sys , os
+import warnings
+
+# Suppress pkg_resources deprecation warning from xgboost
+warnings.filterwarnings('ignore', message='.*pkg_resources is deprecated.*', category=UserWarning)
+
+# Add project root to Python path to allow running this file directly
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from src.components.data_ingestion import DataIngestion
 from src.components.data_transformation import DataTransformation
@@ -43,3 +52,13 @@ class TrainingPipeline:
             print('Training completed. Trained model score:', r2_square)
         except Exception as e:
             raise CustomException(e,sys)
+
+if __name__ == "__main__":
+    try:
+        print("Starting training pipeline...")
+        pipeline = TrainingPipeline()
+        pipeline.run_pipeline()
+        print("Training pipeline completed successfully!")
+    except Exception as e:
+        print(f"Error during training: {e}")
+        sys.exit(1)
